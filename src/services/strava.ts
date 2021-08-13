@@ -7,6 +7,11 @@ export class Strava {
   private refreshToken: string;
 
   constructor(clientId: string, clientSecret: string, refreshToken: string) {
+    if (clientId === null || clientSecret === null || refreshToken === null) {
+      // To remind me to set env variables in production.
+      throw Error("Error - Did not set ENV variables.");
+    }
+
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.refreshToken = refreshToken;
@@ -20,7 +25,7 @@ export class Strava {
     );
 
     if (this.accessToken === null) {
-      throw Error("Unable to get strava access token");
+      throw Error("Error - Unable to get strava access token!");
     }
   };
 
@@ -29,18 +34,44 @@ export class Strava {
     client_secret: string,
     refresh_token: string
   ): Promise<string | null> => {
-    const strava_res = await axios.post(
-      "https://www.strava.com/api/v3/oauth/token",
+    const res = await axios.post("https://www.strava.com/api/v3/oauth/token", {
+      client_id: client_id,
+      client_secret: client_secret,
+      refresh_token: refresh_token,
+      grant_type: "refresh_token",
+    });
+
+    return res.data["access_token"];
+  };
+
+  public getActivities = async (offset: string): Promise<any> => {
+    const res = await axios.get(
+      "https://www.strava.com/api/v3/athlete/activities",
       {
-        client_id: client_id,
-        client_secret: client_secret,
-        refresh_token: refresh_token,
-        grant_type: "refresh_token",
+        headers: { Authorization: `Bearer ${this.accessToken}` },
+        params: { page: offset, per_page: 100 },
       }
     );
 
-    return strava_res.data["access_token"];
+    return res.data;
   };
 
-  public getActivities = async () => {};
+  public getAthlete = async (): Promise<any> => {
+    const res = await axios.get("https://www.strava.com/api/v3/athlete", {
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+    });
+
+    return res.data;
+  };
+
+  public getStats = async (athleteId: string): Promise<any> => {
+    const res = await axios.get(
+      `https://www.strava.com/api/v3/athletes/${athleteId}/stats`,
+      {
+        headers: { Authorization: `Bearer ${this.accessToken}` },
+      }
+    );
+
+    return res.data;
+  };
 }

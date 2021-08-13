@@ -5,3 +5,5 @@ declare namespace NodeJS {
     CLIENT_REFRESH: string;
   }
 }
+
+declare module "@rebass/preset";

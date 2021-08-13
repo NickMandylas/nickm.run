@@ -21,6 +21,7 @@ export default async function handler(
     const { offset } = req.query;
     const activities = await strava.getActivities(offset as string);
 
+    res.setHeader("Cache-Control", "s-maxage=600");
     res.status(200).json(activities);
   } catch {
     res.status(429).json({ error: "Rate Limited!" });

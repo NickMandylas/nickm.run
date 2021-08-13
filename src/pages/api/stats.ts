@@ -20,6 +20,7 @@ export default async function handler(
     await strava.init();
     const stats = await strava.getStats("26756372");
 
+    res.setHeader("Cache-Control", "s-maxage=600");
     res.status(200).json(stats);
   } catch {
     res.status(429).json({ error: "Rate Limited!" });
